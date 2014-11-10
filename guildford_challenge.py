@@ -56,6 +56,27 @@ def prepair_data():
         event_names = dict((id, name) for id,name in load('Events', 'id name'))
         all_averages = load('RanksAverage', 'personId eventId best')
 
+class TopTeams:
+    teams = []
+
+    def __init__(self, max_team_count):
+        self.max_team_count = max_team_count
+
+    def add(self, team, times, event_division):
+        if sorted(times, reversed=True) < self.worst_times:
+            #check, if there is a team consisting of the same same people
+            for i, (team2, times2, event_division2) in enumerate(self.teams):
+                if set(team) == set(team2):
+                    if sorted(times, reverse=True) < sorted(times2, reverse=True):
+                        self.teams[i] = (team[:], times[:], [events[:] for events in event_division])
+                    break
+            else:
+                self.teams.append((team[:], times[:], [events[:] for events in event_division]))
+            #sort teams by times and if necessary remove the last entry
+            self.teams.sort(key=lambda t: sorted(t[1], reverse=True))
+            if len(self.teams) > self.max_team_count:
+                self.teams.pop()
+
 def search_for_team(country, events, team_size):
     global all_persons, all_averages
     global persons, averages
