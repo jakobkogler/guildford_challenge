@@ -57,29 +57,42 @@ def prepair_data():
         all_averages = load('RanksAverage', 'personId eventId best')
 
 class TopTeams:
-    teams = []
-
     def __init__(self, max_team_count):
         self.max_team_count = max_team_count
+        self.teams = []
 
     def add(self, team, times, event_division):
-        if sorted(times, reversed=True) < self.worst_times:
-            #check, if there is a team consisting of the same same people
-            for i, (team2, times2, event_division2) in enumerate(self.teams):
-                if set(team) == set(team2):
-                    if sorted(times, reverse=True) < sorted(times2, reverse=True):
-                        self.teams[i] = (team[:], times[:], [events[:] for events in event_division])
-                    break
-            else:
-                self.teams.append((team[:], times[:], [events[:] for events in event_division]))
-            #sort teams by times and if necessary remove the last entry
-            self.teams.sort(key=lambda t: sorted(t[1], reverse=True))
-            if len(self.teams) > self.max_team_count:
-                self.teams.pop()
+        #check, if there is a team consisting of the same same people
+        for i, (team2, times2, event_division2) in enumerate(self.teams):
+            if set(team) == set(team2):
+                if sorted(times, reverse=True) < sorted(times2, reverse=True):
+                    self.teams[i] = (team[:], times[:], [events[:] for events in event_division])
+                break
+        else:
+            self.teams.append((team[:], times[:], [events[:] for events in event_division]))
+        #sort teams by times and if necessary remove the last entry
+        self.teams.sort(key=lambda t: sorted(t[1], reverse=True))
+        if len(self.teams) > self.max_team_count:
+            self.teams.pop()
+
+    def get_worst_time(self):
+        if len(self.teams) > 0:
+            return self.teams[len(self.teams) - 1][1]
+        else:
+            return [float('inf')]
+
+    def printTeams(self):
+        global persons, event_names
+        for team, times, event_division in self.teams:
+            zipped_team = list(zip(team, times, event_division))
+            zipped_team.sort(key=lambda t: t[1], reverse=True)
+            for person, t, events in zipped_team:
+                print(persons[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+            print('Total:', max(times)/100, '\n')
 
 def search_for_team(country, events, team_size):
     global all_persons, all_averages
-    global persons, averages
+    global persons, averages, top_teams
 
     #organize the corresponding data
     persons = dict((id, name) for id, name, countryId in all_persons if countryId == country)
@@ -88,7 +101,31 @@ def search_for_team(country, events, team_size):
         if personId in persons and eventId in events:
             averages[personId][eventId] = best
 
+    top_teams = TopTeams(10)
+    for team in combinations(averages, team_size):
+        divide_events(team, events, [0 for i in range(team_size)], [[] for i in range(team_size)])
+
+    print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
+    top_teams.printTeams()
+
+def divide_events(team, events_left, times, event_division):
+    global top_teams, averages
+
+    if len(events_left) == 0:
+        top_teams.add(team, times, event_division)
+    else:
+        next_event = events_left[0]
+        for i, person in enumerate(team):
+            if next_event in averages[person]:
+                times_copy = times[:]
+                times_copy[i] += averages[person][next_event]
+                if sorted(times_copy, reverse=True) < sorted(top_teams.get_worst_time(), reverse=True):
+                    event_division2 = [events[:] for events in event_division]
+                    event_division2[i].append(next_event)
+                    divide_events(team, events_left[1:], times_copy, event_division2)
 
 update_tsv_export()
 prepair_data()
+
 search_for_team('Finland', '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), 3)
+search_for_team('Finland', '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), 2)
