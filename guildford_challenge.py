@@ -5,6 +5,7 @@ from time import time
 from zipfile import ZipFile
 from itertools import combinations
 from collections import defaultdict
+from copy import deepcopy
 
 def update_tsv_export(reporthook=None):
     """If export is missing or not current, download the current one. Returns True iff the export was updated."""
@@ -35,7 +36,7 @@ def update_tsv_export(reporthook=None):
             os.utime(max(here))
 
 def prepair_data():
-    global all_persons, event_names, all_averages
+    global all_persons, event_names, all_averages, countries
 
     with ZipFile(max(glob('WCA_export*_*.tsv.zip'))) as zf:
         def load(wanted_table, wanted_columns):
@@ -55,6 +56,7 @@ def prepair_data():
         all_persons = list((id, name, countryId) for id, subid, name, countryId in load('Persons', 'id subid name countryId') if subid == 1)
         event_names = dict((id, name) for id,name in load('Events', 'id name'))
         all_averages = load('RanksAverage', 'personId eventId best')
+        countries = [country[0] for country in load('Countries', 'id')]
 
 class TopTeams:
     def __init__(self, max_team_count):
@@ -90,7 +92,7 @@ class TopTeams:
                 print(persons[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
             print('Total:', max(times)/100, '\n')
 
-def search_for_team(country, events, team_size):
+def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), number_of_top_teams = 10):
     global all_persons, all_averages
     global persons, averages, top_teams
 
@@ -100,13 +102,17 @@ def search_for_team(country, events, team_size):
     for personId, eventId, best in all_averages:
         if personId in persons and eventId in events:
             averages[personId][eventId] = best
+    #remove people with only 1 event
+    averages = dict((personId, events) for personId, events in averages.items() if len(events) > 2)
+    print(country, len(averages))
 
-    top_teams = TopTeams(10)
+    top_teams = TopTeams(number_of_top_teams)
     for team in combinations(averages, team_size):
         divide_events(team, events, [0 for i in range(team_size)], [[] for i in range(team_size)])
 
     print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
     top_teams.printTeams()
+    return top_teams
 
 def divide_events(team, events_left, times, event_division):
     global top_teams, averages
@@ -124,8 +130,56 @@ def divide_events(team, events_left, times, event_division):
                     event_division2[i].append(next_event)
                     divide_events(team, events_left[1:], times_copy, event_division2)
 
-update_tsv_export()
-prepair_data()
+def search_best_teams_fast(country, team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), number_of_top_teams = 10, show_output = True):
+    global all_persons, all_averages
+    global averages, top_teams, persons
 
-search_for_team('Finland', '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), 3)
-search_for_team('Finland', '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), 2)
+    #organize the corresponding data
+    persons = dict((id, name) for id, name, countryId in all_persons if countryId == country)
+    averages = defaultdict(dict)
+    for personId, eventId, best in all_averages:
+        if personId in persons and eventId in events:
+            averages[personId][eventId] = best
+    #remove people with only 1 event
+    averages = dict((personId, events) for personId, events in averages.items() if len(events) > 2)
+
+    #find persons with best 777 averages
+    best777 = [(personId, events) for personId, events in averages.items() if '777' in events]
+    best777.sort(key=lambda a: a[1]['777'])
+
+    top_teams = TopTeams(number_of_top_teams)
+    for p777, tmp in best777[:10]:
+        for team2 in combinations(averages, 2):
+            if p777 not in team2:
+                team = list(team2) + [p777]
+                divide_events(team, events, [0 for i in range(team_size)], [[] for i in range(team_size)])
+
+    print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
+    top_teams.printTeams()
+    return top_teams
+
+def country_ranking():
+    global countries, all_persons, event_names
+    persons_names = dict((id, name) for id, name, countryId in all_persons)
+    country_rankings = []
+    for country in countries:
+        top_team = search_best_teams_fast(country, number_of_top_teams=1, show_output=False)
+        if len(top_team.teams) > 0:
+            country_rankings.append((country, deepcopy(top_team.teams[0])))
+
+    country_rankings.sort(key=lambda i: i[1][1])
+
+    for country, team in country_rankings:
+        print(country + ': ' + str(max(team[1])/100) + ' seconds')
+        zipped_team = list(zip(team[0], team[1], team[2]))
+        zipped_team.sort(key=lambda t: t[1], reverse=True)
+        for person, t, events in zipped_team:
+            print('   ' + persons_names[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+
+
+if __name__ == '__main__':
+    update_tsv_export()
+    prepair_data()
+    search_for_team('Finland')
+    search_for_team('Finland', 2)
+    country_ranking()
