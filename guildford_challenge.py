@@ -154,8 +154,9 @@ def search_best_teams_fast(country, team_size = 3, events = '777 666 555 minx 33
                 team = list(team2) + [p777]
                 divide_events(team, events, [0 for i in range(team_size)], [[] for i in range(team_size)])
 
-    print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
-    top_teams.printTeams()
+    if show_output:
+        print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
+        top_teams.printTeams()
     return top_teams
 
 def country_ranking():
