@@ -4,6 +4,7 @@ from urllib.request import urlopen, urlretrieve
 from time import time
 from zipfile import ZipFile
 from itertools import combinations
+from collections import defaultdict
 
 def update_tsv_export(reporthook=None):
     """If export is missing or not current, download the current one. Returns True iff the export was updated."""
@@ -34,7 +35,7 @@ def update_tsv_export(reporthook=None):
             os.utime(max(here))
 
 def prepair_data():
-    global persons, event_names, average_rankings
+    global all_persons, event_names, all_averages
 
     with ZipFile(max(glob('WCA_export*_*.tsv.zip'))) as zf:
         def load(wanted_table, wanted_columns):
@@ -51,9 +52,22 @@ def prepair_data():
                     columns.append(column)
                 return list(zip(*columns))
 
-        persons = dict((id, name, countryId) for id, subid, name, countryId in load('Persons', 'id subid name countryId') if subid == 1)
+        all_persons = list((id, name, countryId) for id, subid, name, countryId in load('Persons', 'id subid name countryId') if subid == 1)
         event_names = dict((id, name) for id,name in load('Events', 'id name'))
-        average_rankings = load('RanksAverage', 'personId eventId best')
+        all_averages = load('RanksAverage', 'personId eventId best')
+
+def search_for_team(country, events, team_size):
+    global all_persons, all_averages
+    global persons, averages
+
+    #organize the corresponding data
+    persons = dict((id, name) for id, name, countryId in all_persons if countryId == country)
+    averages = defaultdict(dict)
+    for personId, eventId, best in all_averages:
+        if personId in persons and eventId in events:
+            averages[personId][eventId] = best
+
 
 update_tsv_export()
 prepair_data()
+search_for_team('Finland', '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), 3)
