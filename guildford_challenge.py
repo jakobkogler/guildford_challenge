@@ -89,12 +89,10 @@ class TopTeams:
             zipped_team = list(zip(team, times, event_division))
             zipped_team.sort(key=lambda t: t[1], reverse=True)
             for person, t, events in zipped_team:
-                name = persons[person]
                 try:
-                    name = name[0:name.index('(')-1]
+                    print(persons[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
                 except:
-                    pass
-                print(name + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+                    print(person + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
             print('Total:', max(times)/100, '\n')
 
 def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'.split(), number_of_top_teams = 10):
