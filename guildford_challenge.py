@@ -89,7 +89,12 @@ class TopTeams:
             zipped_team = list(zip(team, times, event_division))
             zipped_team.sort(key=lambda t: t[1], reverse=True)
             for person, t, events in zipped_team:
-                print(persons[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+                name = persons[person]
+                try:
+                    name = name[0:name.index('(')-1]
+                except:
+                    pass
+                print(name + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
             print('Total:', max(times)/100, '\n')
 
 def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'.split(), number_of_top_teams = 10):
@@ -116,7 +121,6 @@ def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444
         else:
             averages2[person] = person_events
     averages = averages2
-    print(country, len(averages))
 
     top_teams = TopTeams(number_of_top_teams)
     for team in combinations(averages, team_size):
@@ -158,7 +162,12 @@ def country_ranking():
         zipped_team = list(zip(team[0], team[1], team[2]))
         zipped_team.sort(key=lambda t: t[1], reverse=True)
         for person, t, events in zipped_team:
-            print('   ' + persons_names[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+            name = persons_names[person]
+            try:
+                name = name[0:name.index('(')-1]
+            except:
+                pass
+            print('   ' + name + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
 
 
 if __name__ == '__main__':
