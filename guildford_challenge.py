@@ -92,7 +92,7 @@ class TopTeams:
                 print(persons[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
             print('Total:', max(times)/100, '\n')
 
-def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), number_of_top_teams = 10):
+def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'.split(), number_of_top_teams = 10):
     global all_persons, all_averages
     global persons, averages, top_teams
 
