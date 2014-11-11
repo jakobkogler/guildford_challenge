@@ -102,8 +102,20 @@ def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444
     for personId, eventId, best in all_averages:
         if personId in persons and eventId in events:
             averages[personId][eventId] = best
-    #remove people with only 1 event
-    averages = dict((personId, events) for personId, events in averages.items() if len(events) > 2)
+
+    #remove people who have at least teamsize nemesis
+    averages2 = dict()
+    for person, person_events in averages.items():
+        nemesis_count = -1 #a person is it's own nemesis
+        for possible_nemesis, nemesis_events in averages.items():
+            if set(person_events.keys()).issubset(set(nemesis_events.keys())):
+                if all(person_events[event] >= nemesis_events[event] for event in person_events):
+                    nemesis_count += 1
+                    if nemesis_count == team_size:
+                        break
+        else:
+            averages2[person] = person_events
+    averages = averages2
     print(country, len(averages))
 
     top_teams = TopTeams(number_of_top_teams)
@@ -130,41 +142,12 @@ def divide_events(team, events_left, times, event_division):
                     event_division2[i].append(next_event)
                     divide_events(team, events_left[1:], times_copy, event_division2)
 
-def search_best_teams_fast(country, team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram'.split(), number_of_top_teams = 10, show_output = True):
-    global all_persons, all_averages
-    global averages, top_teams, persons
-
-    #organize the corresponding data
-    persons = dict((id, name) for id, name, countryId in all_persons if countryId == country)
-    averages = defaultdict(dict)
-    for personId, eventId, best in all_averages:
-        if personId in persons and eventId in events:
-            averages[personId][eventId] = best
-    #remove people with only 1 event
-    averages = dict((personId, events) for personId, events in averages.items() if len(events) > 2)
-
-    #find persons with best 777 averages
-    best777 = [(personId, events) for personId, events in averages.items() if '777' in events]
-    best777.sort(key=lambda a: a[1]['777'])
-
-    top_teams = TopTeams(number_of_top_teams)
-    for p777, tmp in best777[:10]:
-        for team2 in combinations(averages, 2):
-            if p777 not in team2:
-                team = list(team2) + [p777]
-                divide_events(team, events, [0 for i in range(team_size)], [[] for i in range(team_size)])
-
-    if show_output:
-        print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
-        top_teams.printTeams()
-    return top_teams
-
 def country_ranking():
     global countries, all_persons, event_names
     persons_names = dict((id, name) for id, name, countryId in all_persons)
     country_rankings = []
     for country in countries:
-        top_team = search_best_teams_fast(country, number_of_top_teams=1, show_output=False)
+        top_team = search_for_team(country, number_of_top_teams=1)
         if len(top_team.teams) > 0:
             country_rankings.append((country, deepcopy(top_team.teams[0])))
 
