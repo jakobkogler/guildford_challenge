@@ -156,16 +156,14 @@ def country_ranking(team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 
     country_rankings.sort(key=lambda i: sorted(i[1][1], reverse=True))
 
     for i, (country, team) in enumerate(country_rankings, start=1):
-        print('[B]' + str(i) + '. ' + country + ': ' + str(max(team[1])/100) + ' seconds[/B]')
+        print(str(i) + '. ' + country + ': ' + str(max(team[1])/100) + ' seconds')
         zipped_team = list(zip(team[0], team[1], team[2]))
         zipped_team.sort(key=lambda t: t[1], reverse=True)
         for person, t, events in zipped_team:
-            name = persons_names[person]
             try:
-                name = name[0:name.index('(')-1]
+                print('   ' + persons_names[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
             except:
-                pass
-            print('   ' + name + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+                print('   ' + person + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
 
 
 if __name__ == '__main__':
