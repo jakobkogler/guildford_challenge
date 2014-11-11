@@ -101,7 +101,7 @@ def search_for_team(country, team_size, events, number_of_top_teams, show_output
     global persons, averages, top_teams
 
     #organize the corresponding data
-    persons = dict((id, name) for id, name, countryId in all_persons if countryId == country)
+    persons = dict((id, name) for id, name, countryId in all_persons if countryId == country or country=='world')
     averages = defaultdict(dict)
     for personId, eventId, best in all_averages:
         if personId in persons and eventId in events:
@@ -201,9 +201,12 @@ if __name__ == '__main__':
         if command == 'countries':
             rank_by_country = True
             continue
+        if command == 'world':
+            country = command
+            continue
         #if nothing match, print usage
         print('Usage: ')
-        print('  python guildford_challenge.py country_name | countries')
+        print('  python guildford_challenge.py country_name | countries | world')
         print('                    [events="event_names"]')
         print('                    [team_size=number]')
         print('                    [number_of_top_teams=number]')
@@ -215,6 +218,8 @@ if __name__ == '__main__':
         print('      list the top teams for UK for the mini guildford challenge')
         print('python guildford_challenge.py countries')
         print('       ranks the countries by their top team')
+        print('python guildford_challenge.py world team_size=2')
+        print('       top 2-person teams in the world')
         break
     else:
         if country:
