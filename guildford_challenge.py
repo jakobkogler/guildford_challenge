@@ -168,10 +168,10 @@ def country_ranking():
         if len(top_team.teams) > 0:
             country_rankings.append((country, deepcopy(top_team.teams[0])))
 
-    country_rankings.sort(key=lambda i: i[1][1])
+    country_rankings.sort(key=lambda i: sorted(i[1][1], reverse=True))
 
-    for country, team in country_rankings:
-        print(country + ': ' + str(max(team[1])/100) + ' seconds')
+    for i, (country, team) in enumerate(country_rankings, start=1):
+        print('[B]' + str(i) + '. ' + country + ': ' + str(max(team[1])/100) + ' seconds[/B]')
         zipped_team = list(zip(team[0], team[1], team[2]))
         zipped_team.sort(key=lambda t: t[1], reverse=True)
         for person, t, events in zipped_team:
