@@ -30,3 +30,7 @@ You will need Python 3.3 or newer.
 
         python guildford_challenge.py "United Kingdom" number_of_top_teams=5
         
+* Find the top teams in the world
+
+        python guildford_challenge.py world
+        
