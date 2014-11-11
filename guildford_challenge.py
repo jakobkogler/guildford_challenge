@@ -118,7 +118,7 @@ def search_for_team(country, team_size, events, number_of_top_teams, show_output
             if set(person_events.keys()).issubset(set(nemesis_events.keys())):
                 if all(person_events[event] >= nemesis_events[event] for event in person_events):
                     nemesis_count += 1
-                    if nemesis_count == team_size:
+                    if nemesis_count == team_size + number_of_top_teams - 1:
                         break
         else:
             averages2[person] = person_events
