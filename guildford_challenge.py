@@ -146,12 +146,12 @@ def divide_events(team, events_left, times, event_division):
                     event_division2[i].append(next_event)
                     divide_events(team, events_left[1:], times_copy, event_division2)
 
-def country_ranking():
+def country_ranking(team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'.split()):
     global countries, all_persons, event_names
     persons_names = dict((id, name) for id, name, countryId in all_persons)
     country_rankings = []
     for country in countries:
-        top_team = search_for_team(country, number_of_top_teams=1)
+        top_team = search_for_team(country, number_of_top_teams=1, team_size=team_size, events=events)
         if len(top_team.teams) > 0:
             country_rankings.append((country, deepcopy(top_team.teams[0])))
 
