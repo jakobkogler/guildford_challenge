@@ -6,6 +6,7 @@ from zipfile import ZipFile
 from itertools import combinations
 from collections import defaultdict
 from copy import deepcopy
+import sys
 
 def update_tsv_export(reporthook=None):
     """If export is missing or not current, download the current one. Returns True iff the export was updated."""
@@ -95,7 +96,7 @@ class TopTeams:
                     print(person + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
             print('Total:', max(times)/100, '\n')
 
-def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'.split(), number_of_top_teams = 10):
+def search_for_team(country, team_size, events, number_of_top_teams, show_output=True):
     global all_persons, all_averages
     global persons, averages, top_teams
 
@@ -124,8 +125,9 @@ def search_for_team(country, team_size = 3, events = '777 666 555 minx 333ft 444
     for team in combinations(averages, team_size):
         divide_events(team, events, [0 for i in range(team_size)], [[] for i in range(team_size)])
 
-    print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
-    top_teams.printTeams()
+    if show_output:
+        print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
+        top_teams.printTeams()
     return top_teams
 
 def divide_events(team, events_left, times, event_division):
@@ -144,12 +146,12 @@ def divide_events(team, events_left, times, event_division):
                     event_division2[i].append(next_event)
                     divide_events(team, events_left[1:], times_copy, event_division2)
 
-def country_ranking(team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'.split()):
+def country_ranking(team_size, events):
     global countries, all_persons, event_names
     persons_names = dict((id, name) for id, name, countryId in all_persons)
     country_rankings = []
     for country in countries:
-        top_team = search_for_team(country, number_of_top_teams=1, team_size=team_size, events=events)
+        top_team = search_for_team(country, team_size, events, 1, False)
         if len(top_team.teams) > 0:
             country_rankings.append((country, deepcopy(top_team.teams[0])))
 
@@ -169,6 +171,53 @@ def country_ranking(team_size = 3, events = '777 666 555 minx 333ft 444 sq1 222 
 if __name__ == '__main__':
     update_tsv_export()
     prepair_data()
-    search_for_team('Finland')
-    search_for_team('Finland', 2)
-    country_ranking()
+
+    global countries
+    events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'.split()
+    team_size = 3
+    number_of_top_teams = 10
+    country = None
+    rank_by_country = False
+    for command in sys.argv[1:]:
+        m = re.findall(r'events=(.*)', command)
+        if m:
+            events = m[0].split()
+            continue
+        m = re.findall(r'team_size=(.*)', command)
+        if m:
+            try:
+                team_size = int(m[0])
+                continue
+            except: pass
+        m = re.findall(r'number_of_top_teams=(.*)', command)
+        if m:
+            try:
+                number_of_top_teams = int(m[0])
+                continue
+            except: pass
+        if command in countries:
+            country = command
+            continue
+        if command == 'countries':
+            rank_by_country = True
+            continue
+        #if nothing match, print usage
+        print('Usage: ')
+        print('  python guildford_challenge.py country_name | countries')
+        print('                    [events="event_names"]')
+        print('                    [team_size=number]')
+        print('                    [number_of_top_teams=number]')
+        print()
+        print('Examples: ')
+        print('python guildford_challenge.py Finland')
+        print('      list the top teams for Finland')
+        print('python guildford_challenge.py "United Kingdom" events="555 444 333 222 333oh sq1 pyram minx clock skewb"')
+        print('      list the top teams for UK for the mini guildford challenge')
+        print('python guildford_challenge.py countries')
+        print('       ranks the countries by their top team')
+        break
+    else:
+        if country:
+            search_for_team(country, team_size, events, number_of_top_teams)
+        elif rank_by_country:
+            country_ranking(team_size, events)
