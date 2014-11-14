@@ -1,4 +1,5 @@
-import os, re
+import os
+import re
 from glob import glob
 from urllib.request import urlopen, urlretrieve
 from time import time
@@ -8,8 +9,10 @@ from collections import defaultdict
 from copy import deepcopy
 import sys
 
+
 def update_tsv_export(reporthook=None):
-    """If export is missing or not current, download the current one. Returns True iff the export was updated."""
+    """If export is missing or not current, download the current one.
+       Returns True iff the export was updated."""
 
     # Is export file missing or older than 10 minutes?
     here = glob('WCA_export*_*.tsv.zip')
@@ -19,7 +22,8 @@ def update_tsv_export(reporthook=None):
         base = 'https://www.worldcubeassociation.org/results/misc/'
         try:
             with urlopen(base + 'export.html') as f:
-                current = re.search(r'WCA_export\d+_\d+.tsv.zip', str(f.read())).group(0)
+                current = re.search(r'WCA_export\d+_\d+.tsv.zip',
+                                    str(f.read())).group(0)
         except:
             print('failed looking for the newest export')
             return
@@ -36,13 +40,15 @@ def update_tsv_export(reporthook=None):
         else:
             os.utime(max(here))
 
+
 def prepair_data():
     global all_persons, event_names, all_averages, countries
 
     with ZipFile(max(glob('WCA_export*_*.tsv.zip'))) as zf:
         def load(wanted_table, wanted_columns):
             with zf.open('WCA_export_' + wanted_table + '.tsv') as tf:
-                column_names, *rows = [line.split('\t') for line in tf.read().decode().splitlines()]
+                column_names, *rows = [line.split('\t') for line
+                                       in tf.read().decode().splitlines()]
                 columns = []
                 for name in wanted_columns.split():
                     i = column_names.index(name)
@@ -55,9 +61,10 @@ def prepair_data():
                 return list(zip(*columns))
 
         all_persons = list((id, name, countryId) for id, subid, name, countryId in load('Persons', 'id subid name countryId') if subid == 1)
-        event_names = dict((id, name) for id,name in load('Events', 'id name'))
+        event_names = dict((id, name) for id, name in load('Events', 'id name'))
         all_averages = load('RanksAverage', 'personId eventId best')
         countries = [country[0] for country in load('Countries', 'id')]
+
 
 class TopTeams:
     def __init__(self, max_team_count):
@@ -65,7 +72,7 @@ class TopTeams:
         self.teams = []
 
     def add(self, team, times, event_division):
-        #check, if there is a team consisting of the same same people
+        # check, if there is a team consisting of the same same people
         for i, (team2, times2, event_division2) in enumerate(self.teams):
             if set(team) == set(team2):
                 if sorted(times, reverse=True) < sorted(times2, reverse=True):
@@ -73,7 +80,7 @@ class TopTeams:
                 break
         else:
             self.teams.append((team[:], times[:], [events[:] for events in event_division]))
-        #sort teams by times and if necessary remove the last entry
+        # sort teams by times and if necessary remove the last entry
         self.teams.sort(key=lambda t: sorted(t[1], reverse=True))
         if len(self.teams) > self.max_team_count:
             self.teams.pop()
@@ -99,21 +106,22 @@ class TopTeams:
                     print(person + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
             print('Total:', max(times)/100, '\n')
 
+
 def search_for_team(country, team_size, events, number_of_top_teams, show_output=True):
     global all_persons, all_averages
     global persons, averages, top_teams
 
-    #organize the corresponding data
-    persons = dict((id, name) for id, name, countryId in all_persons if countryId == country or country=='world')
+    # organize the corresponding data
+    persons = dict((id, name) for id, name, countryId in all_persons if countryId == country or country == 'world')
     averages = defaultdict(dict)
     for personId, eventId, best in all_averages:
         if personId in persons and eventId in events:
             averages[personId][eventId] = best
 
-    #remove people who have at least teamsize nemesis
+    # remove people who have at least teamsize nemesis
     averages2 = dict()
     for person, person_events in averages.items():
-        nemesis_count = -1 #a person is it's own nemesis
+        nemesis_count = -1  # a person is it's own nemesis
         for possible_nemesis, nemesis_events in averages.items():
             if set(person_events.keys()).issubset(set(nemesis_events.keys())):
                 if all(person_events[event] >= nemesis_events[event] for event in person_events):
@@ -133,6 +141,7 @@ def search_for_team(country, team_size, events, number_of_top_teams, show_output
         top_teams.printTeams()
     return top_teams
 
+
 def divide_events(team, events_left, times, event_division):
     global top_teams, averages
 
@@ -148,6 +157,7 @@ def divide_events(team, events_left, times, event_division):
                     event_division2 = [events[:] for events in event_division]
                     event_division2[i].append(next_event)
                     divide_events(team, events_left[1:], times_copy, event_division2)
+
 
 def country_ranking(team_size, events):
     global countries, all_persons, event_names
@@ -191,13 +201,15 @@ if __name__ == '__main__':
             try:
                 team_size = int(m[0])
                 continue
-            except: pass
+            except:
+                pass
         m = re.findall(r'number_of_top_teams=(.*)', command)
         if m:
             try:
                 number_of_top_teams = int(m[0])
                 continue
-            except: pass
+            except:
+                pass
         if command in countries:
             country = command
             continue
@@ -207,7 +219,7 @@ if __name__ == '__main__':
         if command == 'world':
             country = command
             continue
-        #if nothing match, print usage
+        # if nothing match, print usage
         print('Usage: ')
         print('  python guildford_challenge.py country_name | countries | world')
         print('                    [events="event_names"]')
