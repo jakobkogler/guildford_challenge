@@ -12,25 +12,25 @@ You will need Python 3.3 or newer.
 
 * Find the top teams for Finland:
 
-        python guildford_challenge.py Finland
+        python guildford_challenge.py --country=Finland
         
 * Create a country ranking:
 
-        python guildford_challenge.py countries
+        python guildford_challenge.py --country=countries
         
 * Find the top teams for USA using the mini guildford challenge:
 
-        python guildford_challenge.py USA events="555 444 333 222 333oh sq1 pyram minx clock skewb"
+        python guildford_challenge.py --country=USA --events="555 444 333 222 333oh sq1 pyram minx clock skewb"
         
 * Create a country ranking for 2-person teams using only the events feet, 666 and 777:
 
-        python guildford_challenge.py countries team_size=2 events="333ft 666 777"
+        python guildford_challenge.py --country=countries --size=2 --events="333ft 666 777"
         
 * Find the top 5 teams for UK:
 
-        python guildford_challenge.py "United Kingdom" number_of_top_teams=5
+        python guildford_challenge.py --country="United Kingdom" --number=5
         
 * Find the top teams in the world
 
-        python guildford_challenge.py world
+        python guildford_challenge.py --country=world
         
