@@ -7,7 +7,7 @@ from zipfile import ZipFile
 from itertools import combinations
 from collections import defaultdict
 from copy import deepcopy
-import sys
+import sys, optparse
 
 
 def update_tsv_export(reporthook=None):
@@ -202,66 +202,26 @@ def country_ranking(team_size, events):
 
 
 if __name__ == '__main__':
+    parser = optparse.OptionParser("usage: %prog [options]")
+    parser.add_option("-c", "--country", dest="country",
+                      default="world", type="string",
+                      help="country name, 'countries' or 'world'")
+    parser.add_option("-e", "--events", dest="events",
+                      default='777 666 555 minx 333ft 444 sq1 '
+                              '222 333 333oh clock pyram skewb',
+                      type="string", help="included events")
+    parser.add_option("-s", "--size", dest="team_size",
+                      default=3, type="int", help="team size")
+    parser.add_option("-n", "--number", dest="number_of_top_teams",
+                      default=10, type="int", help="show this many teams")
+
+    (options, args) = parser.parse_args()
+
     update_tsv_export()
     prepair_data()
 
-    global countries
-    events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'\
-             .split()
-    team_size = 3
-    number_of_top_teams = 10
-    country = None
-    rank_by_country = False
-    for command in sys.argv[1:]:
-        m = re.findall(r'events=(.*)', command)
-        if m:
-            events = m[0].split()
-            continue
-        m = re.findall(r'team_size=(.*)', command)
-        if m:
-            try:
-                team_size = int(m[0])
-                continue
-            except:
-                pass
-        m = re.findall(r'number_of_top_teams=(.*)', command)
-        if m:
-            try:
-                number_of_top_teams = int(m[0])
-                continue
-            except:
-                pass
-        if command in countries:
-            country = command
-            continue
-        if command == 'countries':
-            rank_by_country = True
-            continue
-        if command == 'world':
-            country = command
-            continue
-        # if nothing match, print usage
-        print('Usage: ')
-        print('  python guildford_challenge.py'
-              ' country_name | countries | world')
-        print('                    [events="event_names"]')
-        print('                    [team_size=number]')
-        print('                    [number_of_top_teams=number]')
-        print()
-        print('Examples: ')
-        print('python guildford_challenge.py Finland')
-        print('      list the top teams for Finland')
-        print('python guildford_challenge.py "United Kingdom"'
-              ' events="555 444 333 222 333oh sq1 pyram minx clock skewb"')
-        print('      list the top teams for UK for the mini'
-              ' guildford challenge')
-        print('python guildford_challenge.py countries')
-        print('       ranks the countries by their top team')
-        print('python guildford_challenge.py world team_size=2')
-        print('       top 2-person teams in the world')
-        break
+    if options.country == 'countries':
+        country_ranking(options.team_size, options.events.split())
     else:
-        if country:
-            search_for_team(country, team_size, events, number_of_top_teams)
-        elif rank_by_country:
-            country_ranking(team_size, events)
+        search_for_team(options.country, options.team_size,
+                        options.events.split(), options.number_of_top_teams)
