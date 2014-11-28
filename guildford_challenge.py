@@ -79,7 +79,7 @@ class TopTeams:
         # check, if there is a team consisting of the same same people
         for i, (team2, times2, event_division2) in enumerate(self.teams):
             if set(team) == set(team2):
-                if sorted(times, reverse=True) < sorted(times2, reverse=True):
+                if self.is_faster(times, times2):
                     self.teams[i] = (deepcopy(team), deepcopy(times),
                                      deepcopy(event_division))
                 break
@@ -90,6 +90,10 @@ class TopTeams:
         self.teams.sort(key=lambda t: sorted(t[1], reverse=True))
         if len(self.teams) > self.max_team_count:
             self.teams.pop()
+
+    @staticmethod
+    def is_faster(times1, times2):
+        return sorted(times1, reverse=True) < sorted(times2, reverse=True)
 
     def get_worst_time(self):
         if len(self.teams) == self.max_team_count:
@@ -163,8 +167,7 @@ def divide_events(team, events_left, times, event_division):
             if next_event in averages[person]:
                 times_copy = times[:]
                 times_copy[i] += averages[person][next_event]
-                if sorted(times_copy, reverse=True) < \
-                   sorted(top_teams.get_worst_time(), reverse=True):
+                if TopTeams.is_faster(times_copy, top_teams.get_worst_time()):
                     event_division2 = [events[:] for events in event_division]
                     event_division2[i].append(next_event)
                     divide_events(team, events_left[1:], times_copy,
