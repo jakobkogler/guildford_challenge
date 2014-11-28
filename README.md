@@ -34,3 +34,8 @@ You will need Python 3.3 or newer.
 
         python guildford_challenge.py --country=world
         
+
+### License
+
+Copyright (C) 2014 Jakob Kogler, [MIT
+License](https://github.com/jakobkogler/guildford_challenge/blob/master/LICENSE.txt)
