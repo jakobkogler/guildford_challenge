@@ -7,7 +7,8 @@ from zipfile import ZipFile
 from itertools import combinations
 from collections import defaultdict
 from copy import deepcopy
-import sys, optparse
+import sys
+import optparse
 
 
 def update_tsv_export(reporthook=None):
@@ -66,7 +67,7 @@ def prepair_data():
         event_names = dict((id, name) for id, name
                            in load('Events', 'id name'))
         all_averages = load('RanksAverage', 'personId eventId best')
-        countries = [country[0] for country in load('Countries', 'id')]
+        countries = load('Countries', 'id')
 
 
 class TopTeams:
