@@ -186,7 +186,8 @@ def country_ranking(team_size, events):
     country_rankings.sort(key=lambda i: sorted(i[1][1], reverse=True))
 
     for i, (country, team) in enumerate(country_rankings, start=1):
-        print(str(i) + '. ' + country + ': ' + str(max(team[1])/100) + ' seconds')
+        time_str = str(max(team[1])/100) + ' seconds'
+        print(str(i) + '. ' + country + ': ' + time_str)
         zipped_team = list(zip(team[0], team[1], team[2]))
         zipped_team.sort(key=lambda t: t[1], reverse=True)
         for person, t, events in zipped_team:
@@ -205,7 +206,8 @@ if __name__ == '__main__':
     prepair_data()
 
     global countries
-    events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'.split()
+    events = '777 666 555 minx 333ft 444 sq1 222 333 333oh clock pyram skewb'\
+             .split()
     team_size = 3
     number_of_top_teams = 10
     country = None
