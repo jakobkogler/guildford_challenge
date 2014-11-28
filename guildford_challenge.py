@@ -125,7 +125,7 @@ def search_for_team(country, team_size, events, number_of_top_teams,
         if personId in persons and eventId in events:
             averages[personId][eventId] = best
 
-    # remove people who have at least teamsize nemesis
+    # remove people who have too many nemesis
     averages2 = dict()
     for person, person_events in averages.items():
         nemesis_count = -1  # a person is it's own nemesis
@@ -142,8 +142,8 @@ def search_for_team(country, team_size, events, number_of_top_teams,
 
     top_teams = TopTeams(number_of_top_teams)
     for team in combinations(averages, team_size):
-        divide_events(team, events, [0 for i in range(team_size)],
-                      [[] for i in range(team_size)])
+        divide_events(team, events, [0 for _ in range(team_size)],
+                      [[] for _ in range(team_size)])
 
     if show_output:
         print('Top teams for %d-person teams for the'
@@ -161,10 +161,10 @@ def divide_events(team, events_left, times, event_division):
         next_event = events_left[0]
         for i, person in enumerate(team):
             if next_event in averages[person]:
-                times_copy = times[:]
+                times_copy = deepcopy(times)
                 times_copy[i] += averages[person][next_event]
                 if TopTeams.is_faster(times_copy, top_teams.get_worst_time()):
-                    event_division2 = [events[:] for events in event_division]
+                    event_division2 = deepcopy(event_division)
                     event_division2[i].append(next_event)
                     divide_events(team, events_left[1:], times_copy,
                                   event_division2)
