@@ -60,8 +60,11 @@ def prepair_data():
                     columns.append(column)
                 return list(zip(*columns))
 
-        all_persons = list((id, name, countryId) for id, subid, name, countryId in load('Persons', 'id subid name countryId') if subid == 1)
-        event_names = dict((id, name) for id, name in load('Events', 'id name'))
+        all_persons = list((id, name, countryId) for id, subid, name, countryId
+                           in load('Persons', 'id subid name countryId')
+                           if subid == 1)
+        event_names = dict((id, name) for id, name
+                           in load('Events', 'id name'))
         all_averages = load('RanksAverage', 'personId eventId best')
         countries = [country[0] for country in load('Countries', 'id')]
 
@@ -76,10 +79,12 @@ class TopTeams:
         for i, (team2, times2, event_division2) in enumerate(self.teams):
             if set(team) == set(team2):
                 if sorted(times, reverse=True) < sorted(times2, reverse=True):
-                    self.teams[i] = (team[:], times[:], [events[:] for events in event_division])
+                    self.teams[i] = (deepcopy(team), deepcopy(times),
+                                     deepcopy(event_division))
                 break
         else:
-            self.teams.append((team[:], times[:], [events[:] for events in event_division]))
+            self.teams.append((deepcopy(team), deepcopy(times),
+                               deepcopy(event_division)))
         # sort teams by times and if necessary remove the last entry
         self.teams.sort(key=lambda t: sorted(t[1], reverse=True))
         if len(self.teams) > self.max_team_count:
@@ -100,19 +105,23 @@ class TopTeams:
             zipped_team = list(zip(team, times, event_division))
             zipped_team.sort(key=lambda t: t[1], reverse=True)
             for person, t, events in zipped_team:
+                event_str = ', '.join([event_names[event] for event in events])
+                time_str = ' (' + str(t/100) + ' seconds)'
                 try:
-                    print(persons[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+                    print(persons[person] + ': ' + event_str + time_str)
                 except:
-                    print(person + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+                    print(person + ': ' + event_str + time_str)
             print('Total:', max(times)/100, '\n')
 
 
-def search_for_team(country, team_size, events, number_of_top_teams, show_output=True):
+def search_for_team(country, team_size, events, number_of_top_teams,
+                    show_output=True):
     global all_persons, all_averages
     global persons, averages, top_teams
 
     # organize the corresponding data
-    persons = dict((id, name) for id, name, countryId in all_persons if countryId == country or country == 'world')
+    persons = dict((id, name) for id, name, countryId in all_persons
+                   if countryId == country or country == 'world')
     averages = defaultdict(dict)
     for personId, eventId, best in all_averages:
         if personId in persons and eventId in events:
@@ -124,7 +133,8 @@ def search_for_team(country, team_size, events, number_of_top_teams, show_output
         nemesis_count = -1  # a person is it's own nemesis
         for possible_nemesis, nemesis_events in averages.items():
             if set(person_events.keys()).issubset(set(nemesis_events.keys())):
-                if all(person_events[event] >= nemesis_events[event] for event in person_events):
+                if all(person_events[event] >= nemesis_events[event]
+                       for event in person_events):
                     nemesis_count += 1
                     if nemesis_count == team_size + number_of_top_teams - 1:
                         break
@@ -134,10 +144,12 @@ def search_for_team(country, team_size, events, number_of_top_teams, show_output
 
     top_teams = TopTeams(number_of_top_teams)
     for team in combinations(averages, team_size):
-        divide_events(team, events, [0 for i in range(team_size)], [[] for i in range(team_size)])
+        divide_events(team, events, [0 for i in range(team_size)],
+                      [[] for i in range(team_size)])
 
     if show_output:
-        print('Top teams for %d-person teams for the guildford_challenge in %s:' % (team_size, country))
+        print('Top teams for %d-person teams for the'
+              ' guildford_challenge in %s:' % (team_size, country))
         top_teams.printTeams()
     return top_teams
 
@@ -153,10 +165,13 @@ def divide_events(team, events_left, times, event_division):
             if next_event in averages[person]:
                 times_copy = times[:]
                 times_copy[i] += averages[person][next_event]
-                if not top_teams.storage_full() or sorted(times_copy, reverse=True) < sorted(top_teams.get_worst_time(), reverse=True):
+                if not top_teams.storage_full() or \
+                   sorted(times_copy, reverse=True) < \
+                   sorted(top_teams.get_worst_time(), reverse=True):
                     event_division2 = [events[:] for events in event_division]
                     event_division2[i].append(next_event)
-                    divide_events(team, events_left[1:], times_copy, event_division2)
+                    divide_events(team, events_left[1:], times_copy,
+                                  event_division2)
 
 
 def country_ranking(team_size, events):
@@ -175,10 +190,14 @@ def country_ranking(team_size, events):
         zipped_team = list(zip(team[0], team[1], team[2]))
         zipped_team.sort(key=lambda t: t[1], reverse=True)
         for person, t, events in zipped_team:
+            event_str = ', '.join([event_names[event] for event in events])
+            time_str = ' (' + str(t/100) + ' seconds)'
             try:
-                print('   ' + persons_names[person] + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+                print('   ' + persons_names[person] + ': ' +
+                      event_str + time_str)
             except:
-                print('   ' + person + ': ' + ', '.join([event_names[event] for event in events]) + ' (' + str(t/100) + ' seconds)')
+                print('   ' + person + ': ' +
+                      event_str + time_str)
 
 
 if __name__ == '__main__':
@@ -221,7 +240,8 @@ if __name__ == '__main__':
             continue
         # if nothing match, print usage
         print('Usage: ')
-        print('  python guildford_challenge.py country_name | countries | world')
+        print('  python guildford_challenge.py'
+              ' country_name | countries | world')
         print('                    [events="event_names"]')
         print('                    [team_size=number]')
         print('                    [number_of_top_teams=number]')
@@ -229,8 +249,10 @@ if __name__ == '__main__':
         print('Examples: ')
         print('python guildford_challenge.py Finland')
         print('      list the top teams for Finland')
-        print('python guildford_challenge.py "United Kingdom" events="555 444 333 222 333oh sq1 pyram minx clock skewb"')
-        print('      list the top teams for UK for the mini guildford challenge')
+        print('python guildford_challenge.py "United Kingdom"'
+              ' events="555 444 333 222 333oh sq1 pyram minx clock skewb"')
+        print('      list the top teams for UK for the mini'
+              ' guildford challenge')
         print('python guildford_challenge.py countries')
         print('       ranks the countries by their top team')
         print('python guildford_challenge.py world team_size=2')
