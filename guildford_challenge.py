@@ -92,13 +92,10 @@ class TopTeams:
             self.teams.pop()
 
     def get_worst_time(self):
-        if len(self.teams) > 0:
+        if len(self.teams) == self.max_team_count:
             return self.teams[len(self.teams) - 1][1]
         else:
             return [float('inf')]
-
-    def storage_full(self):
-        return len(self.teams) == self.max_team_count
 
     def printTeams(self):
         global persons, event_names
@@ -166,8 +163,7 @@ def divide_events(team, events_left, times, event_division):
             if next_event in averages[person]:
                 times_copy = times[:]
                 times_copy[i] += averages[person][next_event]
-                if not top_teams.storage_full() or \
-                   sorted(times_copy, reverse=True) < \
+                if sorted(times_copy, reverse=True) < \
                    sorted(top_teams.get_worst_time(), reverse=True):
                     event_division2 = [events[:] for events in event_division]
                     event_division2[i].append(next_event)
