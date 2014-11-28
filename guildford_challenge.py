@@ -76,17 +76,13 @@ class TopTeams:
         self.teams = []
 
     def add(self, team, times, event_division):
-        # check, if there is a team consisting of the same same people
         for i, (team2, times2, event_division2) in enumerate(self.teams):
             if set(team) == set(team2):
                 if self.is_faster(times, times2):
-                    self.teams[i] = (deepcopy(team), deepcopy(times),
-                                     deepcopy(event_division))
+                    self.teams[i] = deepcopy((team, times, event_division))
                 break
         else:
-            self.teams.append((deepcopy(team), deepcopy(times),
-                               deepcopy(event_division)))
-        # sort teams by times and if necessary remove the last entry
+            self.teams.append(deepcopy((team, times, event_division)))
         self.teams.sort(key=lambda t: sorted(t[1], reverse=True))
         if len(self.teams) > self.max_team_count:
             self.teams.pop()
