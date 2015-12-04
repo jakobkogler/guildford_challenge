@@ -48,8 +48,7 @@ def prepair_data():
     with ZipFile(max(glob('WCA_export*_*.tsv.zip'))) as zf:
         def load(wanted_table, wanted_columns):
             with zf.open('WCA_export_' + wanted_table + '.tsv') as tf:
-                column_names, *rows = [line.split('\t') for line
-                                       in tf.read().decode().splitlines()]
+                column_names, *rows = [line.split('\t') for line in tf.read().decode().splitlines()]
                 columns = []
                 for name in wanted_columns.split():
                     i = column_names.index(name)
