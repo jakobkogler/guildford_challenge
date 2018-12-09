@@ -23,7 +23,7 @@ def update_tsv_export(reporthook=None):
         base = 'https://www.worldcubeassociation.org/results/misc/'
         try:
             with urlopen(base + 'export.html') as f:
-                current = re.search(r'WCA_export\d+_\d+.tsv.zip',
+                current = re.search(r'WCA_export\d+_[0-9A-Z]+.tsv.zip',
                                     str(f.read())).group(0)
         except:
             print('failed looking for the newest export')
