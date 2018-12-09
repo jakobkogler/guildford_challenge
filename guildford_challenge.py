@@ -174,9 +174,9 @@ def country_ranking(team_size, events):
     persons_names = dict((id, name) for id, name, countryId in all_persons)
     country_rankings = []
     for country in countries:
-        top_team = search_for_team(country, team_size, events, 1, False)
+        top_team = search_for_team(country[0], team_size, events, 1, False)
         if len(top_team.teams) > 0:
-            country_rankings.append((country, deepcopy(top_team.teams[0])))
+            country_rankings.append((country[0], deepcopy(top_team.teams[0])))
 
     country_rankings.sort(key=lambda i: sorted(i[1][1], reverse=True))
 
